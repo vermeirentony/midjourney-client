@@ -22,7 +22,7 @@ class Midjourney extends midjourney_message_1.MidjourneyMessage {
         };
         this.MJApi = new midjourne_api_1.MidjourneyApi(this.config);
     }
-    async init() {
+    async Connect() {
         if (!this.config.Ws) {
             return this;
         }
@@ -35,6 +35,9 @@ class Midjourney extends midjourney_message_1.MidjourneyMessage {
                 resolve(this);
             });
         });
+    }
+    async init() {
+        return this.Connect();
     }
     async Imagine(prompt, loading) {
         prompt = prompt.trim();
@@ -85,38 +88,67 @@ class Midjourney extends midjourney_message_1.MidjourneyMessage {
         }
         return null;
     }
-    async Variation(content, index, msgId, msgHash, loading) {
-        // index is 1-4
-        if (index < 1 || index > 4) {
-            throw new Error(`Variation index must be between 1 and 4, got ${index}`);
-        }
-        const nonce = (0, utls_1.nextNonce)();
-        const httpStatus = await this.MJApi.VariationApi(index, msgId, msgHash, nonce);
-        if (httpStatus !== 204) {
-            throw new Error(`VariationApi failed with status ${httpStatus}`);
-        }
-        if (this.wsClient) {
-            return await this.wsClient.waitImageMessage(nonce, loading);
-        }
-        else {
-            return await this.WaitOptionMessage(content, `Variations`, loading);
-        }
+    async Describe(imgUri) {
+        return null;
     }
-    async Upscale(content, index, msgId, msgHash, loading) {
-        // index is 1-4
-        if (index < 1 || index > 4) {
-            throw new Error(`Variation index must be between 1 and 4, got ${index}`);
-        }
+    async Variation({ index, msgId, hash, content, flags, loading, }) {
         const nonce = (0, utls_1.nextNonce)();
-        const httpStatus = await this.MJApi.UpscaleApi(index, msgId, msgHash, nonce);
+        const httpStatus = await this.MJApi.VariationApi({
+            index,
+            msgId,
+            hash,
+            flags,
+            nonce,
+        });
         if (httpStatus !== 204) {
             throw new Error(`VariationApi failed with status ${httpStatus}`);
         }
-        this.log(`await generate image`);
         if (this.wsClient) {
             return await this.wsClient.waitImageMessage(nonce, loading);
         }
-        return await this.WaitUpscaledMessage(content, index, loading);
+        if (content === undefined || content === "") {
+            throw new Error(`content is required`);
+        }
+        return await this.WaitMessage(content, loading);
+    }
+    async Upscale({ index, msgId, hash, content, flags, loading, }) {
+        const nonce = (0, utls_1.nextNonce)();
+        const httpStatus = await this.MJApi.UpscaleApi({
+            index,
+            msgId,
+            hash,
+            flags,
+            nonce,
+        });
+        if (httpStatus !== 204) {
+            throw new Error(`UpscaleApi failed with status ${httpStatus}`);
+        }
+        if (this.wsClient) {
+            return await this.wsClient.waitImageMessage(nonce, loading);
+        }
+        if (content === undefined || content === "") {
+            throw new Error(`content is required`);
+        }
+        return await this.WaitMessage(content, loading);
+    }
+    async Reroll({ msgId, hash, content, flags, loading, }) {
+        const nonce = (0, utls_1.nextNonce)();
+        const httpStatus = await this.MJApi.RerollApi({
+            msgId,
+            hash: hash,
+            flags,
+            nonce,
+        });
+        if (httpStatus !== 204) {
+            throw new Error(`RerollApi failed with status ${httpStatus}`);
+        }
+        if (this.wsClient) {
+            return await this.wsClient.waitImageMessage(nonce, loading);
+        }
+        if (content === undefined || content === "") {
+            throw new Error(`content is required`);
+        }
+        return await this.WaitMessage(content, loading);
     }
     Close() {
         if (this.wsClient) {

@@ -88,50 +88,39 @@ class MidjourneyApi {
         };
         return this.safeIteractions(payload);
     }
-    async VariationApi(index, messageId, messageHash, nonce) {
-        const payload = {
-            type: 3,
-            guild_id: this.config.ServerId,
-            channel_id: this.config.ChannelId,
-            message_flags: 0,
-            message_id: messageId,
-            application_id: "936929561302675456",
-            session_id: this.config.SessionId,
-            data: {
-                component_type: 2,
-                custom_id: `MJ::JOB::variation::${index}::${messageHash}`,
-            },
+    async VariationApi({ index, msgId, hash, nonce = (0, utls_1.nextNonce)(), flags = 0, }) {
+        return this.CustomApi({
+            msgId,
+            customId: `MJ::JOB::variation::${index}::${hash}`,
+            flags,
             nonce,
-        };
-        return this.safeIteractions(payload);
+        });
     }
-    async UpscaleApi(index, messageId, messageHash, nonce) {
-        const guild_id = this.config.ServerId;
-        const payload = {
-            type: 3,
-            guild_id,
-            channel_id: this.config.ChannelId,
-            message_flags: 0,
-            message_id: messageId,
-            application_id: "936929561302675456",
-            session_id: this.config.SessionId,
-            data: {
-                component_type: 2,
-                custom_id: `MJ::JOB::upsample::${index}::${messageHash}`,
-            },
+    async UpscaleApi({ index, msgId, hash, nonce = (0, utls_1.nextNonce)(), flags, }) {
+        return this.CustomApi({
+            msgId,
+            customId: `MJ::JOB::upsample::${index}::${hash}`,
+            flags,
             nonce,
-        };
-        return this.safeIteractions(payload);
+        });
     }
-    async ClickBtnApi(messageId, customId, nonce) {
+    async RerollApi({ msgId, hash, nonce = (0, utls_1.nextNonce)(), flags, }) {
+        return this.CustomApi({
+            msgId,
+            customId: `MJ::JOB::reroll::0::${hash}::SOLO`,
+            flags,
+            nonce,
+        });
+    }
+    async CustomApi({ msgId: msgId, customId, flags, nonce = (0, utls_1.nextNonce)(), }) {
         const guild_id = this.config.ServerId;
         const payload = {
             type: 3,
             nonce,
             guild_id,
             channel_id: this.config.ChannelId,
-            message_flags: 0,
-            message_id: messageId,
+            message_flags: flags,
+            message_id: msgId,
             application_id: "936929561302675456",
             session_id: this.config.SessionId,
             data: {

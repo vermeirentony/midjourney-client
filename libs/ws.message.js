@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WsMessage = void 0;
+const utls_1 = require("./utls");
 const verify_human_1 = require("./verify.human");
 class WsMessage {
     config;
@@ -78,7 +79,7 @@ class WsMessage {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
     async messageCreate(message) {
-        const { embeds, id, nonce, components } = message;
+        const { embeds, id, nonce, components, attachments } = message;
         if (nonce) {
             this.log("waiting start image or info or error");
             this.updateMjEventIdByNonce(id, nonce);
@@ -109,8 +110,7 @@ class WsMessage {
                 }
             }
         }
-        if (!nonce && components?.length > 0) {
-            this.log("finished image");
+        if (!nonce && attachments?.length > 0 && components?.length > 0) {
             this.done(message);
             return;
         }
@@ -137,7 +137,7 @@ class WsMessage {
         this.processingImage(message);
     }
     processingImage(message) {
-        const { content, id, attachments } = message;
+        const { content, id, attachments, flags } = message;
         const event = this.getEventById(id);
         if (!event) {
             return;
@@ -150,6 +150,7 @@ class WsMessage {
         const MJmsg = {
             uri: attachments[0].url,
             content: content,
+            flags: flags,
             progress: this.content2progress(content),
         };
         const eventMsg = {
@@ -190,7 +191,7 @@ class WsMessage {
             this.log("HuggingFaceToken is empty");
             return;
         }
-        const { embeds, components } = message;
+        const { embeds, components, id, flags } = message;
         const uri = embeds[0].image.url;
         const categories = components[0].components;
         const classify = categories.map((c) => c.label);
@@ -198,9 +199,12 @@ class WsMessage {
         const category = await verifyClient.verify(uri, classify);
         if (category) {
             const custom_id = categories.find((c) => c.label === category).custom_id;
-            const httpStatus = await this.MJApi.ClickBtnApi(custom_id, message.id);
+            const httpStatus = await this.MJApi.CustomApi({
+                msgId: id,
+                customId: custom_id,
+                flags,
+            });
             this.log("verifyHumanApi", httpStatus, custom_id, message.id);
-            // this.log("verify success", category);
         }
     }
     EventError(id, error) {
@@ -214,13 +218,15 @@ class WsMessage {
         this.emit(event.nonce, eventMsg);
     }
     done(message) {
-        const { content, id, attachments } = message;
+        const { content, id, attachments, components, flags } = message;
         const MJmsg = {
             id,
+            flags,
+            content,
             hash: this.uriToHash(attachments[0].url),
             progress: "done",
             uri: attachments[0].url,
-            content: content,
+            options: (0, utls_1.formatOptions)(components),
         };
         this.filterMessages(MJmsg);
         return;

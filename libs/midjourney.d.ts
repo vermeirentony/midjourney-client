@@ -6,12 +6,35 @@ export declare class Midjourney extends MidjourneyMessage {
     private wsClient?;
     MJApi: MidjourneyApi;
     constructor(defaults: MJConfigParam);
+    Connect(): Promise<Midjourney>;
     init(): Promise<Midjourney>;
     Imagine(prompt: string, loading?: LoadingHandler): Promise<import("./interfaces").MJMessage | null>;
     Info(): Promise<import("./interfaces").MJInfo | null>;
     Fast(): Promise<null>;
     Relax(): Promise<null>;
-    Variation(content: string, index: number, msgId: string, msgHash: string, loading?: LoadingHandler): Promise<import("./interfaces").MJMessage | null>;
-    Upscale(content: string, index: number, msgId: string, msgHash: string, loading?: LoadingHandler): Promise<import("./interfaces").MJMessage | null>;
+    Describe(imgUri: string): Promise<null>;
+    Variation({ index, msgId, hash, content, flags, loading, }: {
+        index: 1 | 2 | 3 | 4;
+        msgId: string;
+        hash: string;
+        content?: string;
+        flags: number;
+        loading?: LoadingHandler;
+    }): Promise<import("./interfaces").MJMessage | null>;
+    Upscale({ index, msgId, hash, content, flags, loading, }: {
+        index: 1 | 2 | 3 | 4;
+        msgId: string;
+        hash: string;
+        content?: string;
+        flags: number;
+        loading?: LoadingHandler;
+    }): Promise<import("./interfaces").MJMessage | null>;
+    Reroll({ msgId, hash, content, flags, loading, }: {
+        msgId: string;
+        hash: string;
+        content?: string;
+        flags: number;
+        loading?: LoadingHandler;
+    }): Promise<import("./interfaces").MJMessage | null>;
     Close(): void;
 }

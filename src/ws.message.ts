@@ -8,6 +8,7 @@ import {
 } from "./interfaces";
 
 import { MidjourneyApi } from "./midjourne.api";
+import { formatOptions } from "./utls";
 import { VerifyHuman } from "./verify.human";
 import WebSocket from "isomorphic-ws";
 export class WsMessage {
@@ -88,7 +89,7 @@ export class WsMessage {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
   private async messageCreate(message: any) {
-    const { embeds, id, nonce, components } = message;
+    const { embeds, id, nonce, components, attachments } = message;
 
     if (nonce) {
       this.log("waiting start image or info or error");
@@ -127,8 +128,7 @@ export class WsMessage {
       }
     }
 
-    if (!nonce && components?.length > 0) {
-      this.log("finished image");
+    if (!nonce && attachments?.length > 0 && components?.length > 0) {
       this.done(message);
       return;
     }
@@ -156,7 +156,7 @@ export class WsMessage {
     this.processingImage(message);
   }
   private processingImage(message: any) {
-    const { content, id, attachments } = message;
+    const { content, id, attachments, flags } = message;
     const event = this.getEventById(id);
     if (!event) {
       return;
@@ -169,6 +169,7 @@ export class WsMessage {
     const MJmsg: MJMessage = {
       uri: attachments[0].url,
       content: content,
+      flags: flags,
       progress: this.content2progress(content),
     };
     const eventMsg: WsEventMsg = {
@@ -207,7 +208,7 @@ export class WsMessage {
       this.log("HuggingFaceToken is empty");
       return;
     }
-    const { embeds, components } = message;
+    const { embeds, components, id, flags } = message;
     const uri = embeds[0].image.url;
     const categories = components[0].components;
     const classify = categories.map((c: any) => c.label);
@@ -217,9 +218,12 @@ export class WsMessage {
       const custom_id = categories.find(
         (c: any) => c.label === category
       ).custom_id;
-      const httpStatus = await this.MJApi.ClickBtnApi(custom_id, message.id);
+      const httpStatus = await this.MJApi.CustomApi({
+        msgId: id,
+        customId: custom_id,
+        flags,
+      });
       this.log("verifyHumanApi", httpStatus, custom_id, message.id);
-      // this.log("verify success", category);
     }
   }
   private EventError(id: string, error: Error) {
@@ -234,13 +238,15 @@ export class WsMessage {
   }
 
   private done(message: any) {
-    const { content, id, attachments } = message;
+    const { content, id, attachments, components, flags } = message;
     const MJmsg: MJMessage = {
       id,
+      flags,
+      content,
       hash: this.uriToHash(attachments[0].url),
       progress: "done",
       uri: attachments[0].url,
-      content: content,
+      options: formatOptions(components),
     };
     this.filterMessages(MJmsg);
     return;

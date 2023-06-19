@@ -30,31 +30,31 @@ import { Midjourney } from "midjourney";
     Debug: true,
     Ws:true,
   });
-  await client.init();
+  await client.Connect();
   const Imagine = await client.Imagine("A little pink elephant", (uri: string, progress:string) => {
-   onsole.log("Imagine", uri, "progress", progress);
+   console.log("Imagine", uri, "progress", progress);
   });
   console.log({ Imagine });
 
-  const Variation = await client.Variation(
-    Imagine.content,
-    2,
-    <string>Imagine.id,
-    <string>Imagine.hash,
-    (uri: string, progress:string) => {
-     onsole.log("Imagine", uri, "progress", progress);
-    }
-  );
+  const Variation = await client.Variation({
+    index: 2,
+    msgId: <string>Imagine.id,
+    hash: <string>Imagine.hash,
+    flags: Imagine.flags,
+    loading: (uri: string, progress: string) => {
+      console.log("Variation.loading", uri, "progress", progress);
+    },
+  });
   console.log({ Variation });
-  const Upscale = await client.Upscale(
-    Variation.content,
-    2,
-    <string>Variation.id,
-    <string>Variation.hash,
-    (uri: string, progress: string) => {
-      console.log("Upscale", uri, "progress", progress);
-    }
-  );
+  const Upscale = await client.Upscale({
+    index: 2,
+    msgId: <string>Variation.id,
+    hash: <string>Variation.hash,
+    flags: Variation.flags,
+    loading: (uri: string, progress: string) => {
+      console.log("Upscale.loading", uri, "progress", progress);
+    },
+  });
   console.log({ Upscale });
 
 ```
@@ -66,8 +66,8 @@ To run the included example, you must have [Node.js](https://nodejs.org/en/) ins
 1. clone the repository
 
 ```bash
-git clone https://github.com/erictik/midjourney-api.git
-cd midjourney-api
+git clone https://github.com/erictik/midjourney-client.git
+cd midjourney-client
 ```
 
 2. install dependencies
@@ -101,7 +101,7 @@ npx tsx example/imagine-ws.ts
 ```
 
 ## route-map
-- [x] `/imagine` `variation` `upscale` 
+- [x] `/imagine` `variation` `upscale` `reroll`
 - [x] websocket get message
 - [x] callback error
 - [x] verify human
@@ -113,4 +113,4 @@ npx tsx example/imagine-ws.ts
 ---
 <a href='https://ko-fi.com/erictik' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee' /></a>
 ## Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=erictik/midjourney-api&type=Date)](https://star-history.com/#erictik/midjourney-api&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=erictik/midjourney-client&type=Date)](https://star-history.com/#erictik/midjourney-client&Date)

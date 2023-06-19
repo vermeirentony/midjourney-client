@@ -20,7 +20,7 @@ class MidjourneyMessage {
     log(...args) {
         this.config.Debug && console.log(...args, new Date().toISOString());
     }
-    async FilterMessages(timestamp, prompt, loading, options, index) {
+    async FilterMessages(timestamp, prompt, loading) {
         const seed = prompt.match(/\[(.*?)\]/)?.[1];
         this.log(`seed:`, seed);
         const data = await this.safeRetrieveMessages(this.config.Limit);
@@ -49,11 +49,13 @@ class MidjourneyMessage {
                 //finished
                 const content = item.content.split("**")[1];
                 const msg = {
+                    content,
                     id: item.id,
                     uri: imageUrl,
+                    flags: item.flags,
                     hash: this.UriToHash(imageUrl),
-                    content: content,
                     progress: "done",
+                    options: (0, utls_1.formatOptions)(item.components),
                 };
                 return msg;
             }
@@ -85,30 +87,6 @@ class MidjourneyMessage {
                 return msg;
             }
             this.log(i, "wait no message found");
-            await (0, utls_1.sleep)(1000 * 2);
-        }
-        return null;
-    }
-    async WaitOptionMessage(content, options, loading) {
-        var timestamp = Date.now();
-        for (let i = 0; i < this.config.MaxWait; i++) {
-            const msg = await this.FilterMessages(timestamp, content, loading, options);
-            if (msg !== null) {
-                return msg;
-            }
-            this.log(i, content, "wait no message found");
-            await (0, utls_1.sleep)(1000 * 2);
-        }
-        return null;
-    }
-    async WaitUpscaledMessage(content, index, loading) {
-        var timestamp = Date.now();
-        for (let i = 0; i < this.config.MaxWait; i++) {
-            const msg = await this.FilterMessages(timestamp, content, loading, "Upscaled", index);
-            if (msg !== null) {
-                return msg;
-            }
-            this.log(i, content, "wait no message found");
             await (0, utls_1.sleep)(1000 * 2);
         }
         return null;
