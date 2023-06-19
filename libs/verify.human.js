@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VerifyHuman = void 0;
+const tslib_1 = require("tslib");
 const inference_1 = require("@huggingface/inference");
+const node_fetch_1 = tslib_1.__importDefault(require("node-fetch"));
 class VerifyHuman {
     config;
     inference;
@@ -16,7 +18,7 @@ class VerifyHuman {
     async verify(imageUri, categories) {
         console.log("verify----start", imageUri, categories);
         const imageCates = await this.inference.imageClassification({
-            data: await (await this.config.fetch(imageUri)).blob(),
+            data: await (await (0, node_fetch_1.default)(imageUri)).blob(),
             model: "google/vit-base-patch16-224",
         });
         console.log("verify----response", { imageCates });

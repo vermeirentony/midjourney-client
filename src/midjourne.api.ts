@@ -2,6 +2,8 @@ import { DiscordImage, MJConfig, UploadParam, UploadSlot } from "./interfaces";
 import { CreateQueue } from "./queue";
 import { nextNonce, sleep } from "./utls";
 import * as mime from "mime";
+import fetch from 'node-fetch';
+
 export class MidjourneyApi {
   private apiQueue = CreateQueue(1);
   UpId = Date.now() % 10; // upload id
@@ -26,7 +28,7 @@ export class MidjourneyApi {
         "Content-Type": "application/json",
         Authorization: this.config.SalaiToken,
       };
-      const response = await this.config.fetch(
+      const response = await fetch(
         `${this.config.DiscordBaseUrl}/api/v9/interactions`,
         {
           method: "POST",

@@ -8,6 +8,7 @@ import {
 } from "./interfaces";
 import { CreateQueue } from "./queue";
 import { formatOptions, sleep } from "./utls";
+import fetch from 'node-fetch';
 
 export class MidjourneyMessage {
   private magApiQueue = CreateQueue(1);
@@ -118,7 +119,7 @@ export class MidjourneyMessage {
       "Content-Type": "application/json",
       Authorization: this.config.SalaiToken,
     };
-    const response = await this.config.fetch(
+    const response = await fetch(
       `${this.config.DiscordBaseUrl}/api/v10/channels/${this.config.ChannelId}/messages?limit=${limit}`,
       {
         headers,
