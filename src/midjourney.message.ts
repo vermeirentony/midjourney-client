@@ -8,7 +8,6 @@ import {
 } from "./interfaces";
 import { CreateQueue } from "./queue";
 import { formatOptions, sleep } from "./utls";
-import fetch from 'node-fetch';
 
 export class MidjourneyMessage {
   private magApiQueue = CreateQueue(1);

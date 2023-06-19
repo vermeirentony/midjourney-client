@@ -1,7 +1,5 @@
 import { HfInference } from "@huggingface/inference";
 import { MJConfig } from "./interfaces";
-import fetch from 'node-fetch';
-
 export class VerifyHuman {
   private inference: HfInference;
 

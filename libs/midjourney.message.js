@@ -1,11 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MidjourneyMessage = void 0;
-const tslib_1 = require("tslib");
 const interfaces_1 = require("./interfaces");
 const queue_1 = require("./queue");
 const utls_1 = require("./utls");
-const node_fetch_1 = tslib_1.__importDefault(require("node-fetch"));
 class MidjourneyMessage {
     magApiQueue = (0, queue_1.CreateQueue)(1);
     config;
@@ -102,7 +100,7 @@ class MidjourneyMessage {
             "Content-Type": "application/json",
             Authorization: this.config.SalaiToken,
         };
-        const response = await (0, node_fetch_1.default)(`${this.config.DiscordBaseUrl}/api/v10/channels/${this.config.ChannelId}/messages?limit=${limit}`, {
+        const response = await this.config.fetch(`${this.config.DiscordBaseUrl}/api/v10/channels/${this.config.ChannelId}/messages?limit=${limit}`, {
             headers,
         });
         if (!response.ok) {

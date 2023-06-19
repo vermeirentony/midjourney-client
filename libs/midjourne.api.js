@@ -1,10 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MidjourneyApi = void 0;
-const tslib_1 = require("tslib");
 const queue_1 = require("./queue");
 const utls_1 = require("./utls");
-const node_fetch_1 = tslib_1.__importDefault(require("node-fetch"));
 class MidjourneyApi {
     config;
     apiQueue = (0, queue_1.CreateQueue)(1);
@@ -26,7 +24,7 @@ class MidjourneyApi {
                 "Content-Type": "application/json",
                 Authorization: this.config.SalaiToken,
             };
-            const response = await (0, node_fetch_1.default)(`${this.config.DiscordBaseUrl}/api/v9/interactions`, {
+            const response = await fetch(`${this.config.DiscordBaseUrl}/api/v9/interactions`, {
                 method: "POST",
                 body: JSON.stringify(payload),
                 headers: headers,
